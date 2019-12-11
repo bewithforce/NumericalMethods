@@ -1,16 +1,15 @@
-import numpy as np
-from timeit import default_timer as timer
+import matplotlib.pyplot as plt
 
 EPS = 0.00001
 
 
-# все прям как у него в лекциях
 def Jacobi(A, b):
     N = len(A)
     old_x = [0] * N
     new_x = [0] * N
 
     condition = True
+    t = 0
     while condition:
         for i in range(N):
             new_x[i] = b[i]
@@ -24,51 +23,110 @@ def Jacobi(A, b):
                 norm = abs(old_x[h] - new_x[h])
             old_x[h] = new_x[h]
         condition = norm > EPS
-    return old_x
+        t = t + 1
+    return old_x, t
 
 
-# Решаем уравнение Ax = b
-# Тогда:
-# x(k+1) = D^(-1) * ( b - R * x(k)), где x(k) -- вектор решения на k-ой итерации,
-# D -- главная диагональ матрицы А и R = A - D
-def Jacobi_vec(a, b):
-    A = np.array(a)
-    B = np.array(b)
+def Seidel(A, b):
     N = len(A)
-    old_x = np.zeros(N)
+    old_x = [0] * N
+    new_x = [0] * N
 
-    D = np.diag(A)
-    R = A - np.diagflat(D)
-
+    t = 0
     condition = True
     while condition:
-        new_x = (B - np.dot(R, old_x)) / D
-        condition = np.linalg.norm(new_x - old_x) > EPS
-        old_x = new_x
-
-    return old_x
+        for i in range(N):
+            new_x[i] = b[i]
+            for j in range(i):
+                new_x[i] -= A[i][j] * new_x[j]
+            for j in range(i + 1, N):
+                new_x[i] -= A[i][j] * old_x[j]
+            new_x[i] /= A[i][i]
+        norm = abs(old_x[0] - new_x[0])
+        for h in range(N):
+            if abs(old_x[h] - new_x[h]) > norm:
+                norm = abs(old_x[h] - new_x[h])
+            old_x[h] = new_x[h]
+        condition = norm > EPS
+        t = t + 1
+    return old_x, t
 
 
 def main():
-    A = [[10.0, -1.0, 2.0, 0.0],
-         [-1.0, 11.0, -1.0, 3.0],
-         [2.0, -1.0, 10.0, -1.0],
-         [0.0, 3.0, -1.0, 8.0]]
-    b = [6.0, 25.0, -11.0, 15.0]
+    for n in range(10, 14):
+        alpha = 0.0
+        A = [[0.0] * n for _ in range(n)]
+        b = [0.0] * n
 
-    t = timer()
-    x = Jacobi(A, b)
-    elapsed = timer() - t
-    print("{:.10f} secs elapsed".format(elapsed))
-    print(x)
-    print()
+        x1 = [0.0] * 11
+        x2 = [0.0] * 11
+        y = [0.0] * 11
 
-    t = timer()
-    x = Jacobi_vec(A, b)
-    elapsed = timer() - t
-    print("{:.10f} secs elapsed".format(elapsed))
-    print(x)
-    print()
+        t = 0
+        while alpha <= 1:
+
+            for i in range(0, n):
+                A[i][i] = 2
+                if i != n - 1:
+                    A[i][i + 1] = -1 - alpha
+                else:
+                    b[i] = 1 + alpha
+
+                if i != 0:
+                    A[i][i - 1] = -1 + alpha
+                else:
+                    b[i] = 1 - alpha
+            y[t] = alpha
+            _, x1[t] = Jacobi(A, b)
+            _, x2[t] = Seidel(A, b)
+            t = t + 1
+
+            alpha += 0.1
+        for i in range(4):
+            plt.subplot(4, 2, i * 2 + 1)
+            print(x1)
+            plt.plot(x1, y, label="Jacobi")
+            plt.plot(x2, y, label="Seidel")
+            plt.xlabel("n = {}".format(n))
+            if i == 0:
+                plt.title("fixed n")
+
+    alpha = 0.0
+    while alpha <= 1:
+        x1 = [0.0] * 11
+        x2 = [0.0] * 11
+        y = [0.0] * 11
+
+        t = 0
+
+        for n in range(10, 21):
+            A = [[0.0] * n for _ in range(n)]
+            b = [0.0] * n
+            for i in range(0, n):
+                A[i][i] = 2
+                if i != n - 1:
+                    A[i][i + 1] = -1 - alpha
+                else:
+                    b[i] = 1 + alpha
+
+                if i != 0:
+                    A[i][i - 1] = -1 + alpha
+                else:
+                    b[i] = 1 - alpha
+            y[t] = alpha
+            _, x1[t] = Jacobi(A, b)
+            _, x2[t] = Seidel(A, b)
+            t = t + 1
+        for i in range(4):
+            plt.subplot(4, 2, i * 2 + 2)
+            plt.plot(x1, y, label="Jacobi")
+            plt.plot(x2, y, label="Seidel")
+            plt.xlabel("alpha = {}".format(alpha))
+            if i == 0:
+                plt.title("fixed alpha")
+        alpha += 0.33
+
+    plt.show()
 
 
 main()

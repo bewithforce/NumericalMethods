@@ -1,6 +1,3 @@
-import numpy as np
-from timeit import default_timer as timer
-
 EPS = 0.00001
 
 
