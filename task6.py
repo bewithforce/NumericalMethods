@@ -53,7 +53,7 @@ def Seidel(A, b):
 
 
 def main():
-    for n in range(10, 14):
+    for n in range(10, 15):
         alpha = 0.0
         A = [[0.0] * n for _ in range(n)]
         b = [0.0] * n
@@ -64,7 +64,6 @@ def main():
 
         t = 0
         while alpha <= 1:
-
             for i in range(0, n):
                 A[i][i] = 2
                 if i != n - 1:
@@ -81,15 +80,15 @@ def main():
             _, x2[t] = Seidel(A, b)
             t = t + 1
 
-            alpha += 0.1
-        for i in range(4):
-            plt.subplot(4, 2, i * 2 + 1)
-            print(x1)
-            plt.plot(x1, y, label="Jacobi")
-            plt.plot(x2, y, label="Seidel")
-            plt.xlabel("n = {}".format(n))
-            if i == 0:
-                plt.title("fixed n")
+            alpha += 0.12
+
+        plt.plot(x1, y, label="Jacobi")
+        plt.plot(x2, y, label="Seidel")
+        plt.legend(loc='best')
+        plt.title("n = {}".format(n))
+        plt.xlabel("iterations")
+        plt.ylabel("alpha")
+        plt.show()
 
     alpha = 0.0
     while alpha <= 1:
@@ -113,20 +112,19 @@ def main():
                     A[i][i - 1] = -1 + alpha
                 else:
                     b[i] = 1 - alpha
-            y[t] = alpha
+            y[t] = n
             _, x1[t] = Jacobi(A, b)
             _, x2[t] = Seidel(A, b)
             t = t + 1
-        for i in range(4):
-            plt.subplot(4, 2, i * 2 + 2)
-            plt.plot(x1, y, label="Jacobi")
-            plt.plot(x2, y, label="Seidel")
-            plt.xlabel("alpha = {}".format(alpha))
-            if i == 0:
-                plt.title("fixed alpha")
-        alpha += 0.33
 
-    plt.show()
+        plt.plot(x1, y, label="Jacobi")
+        plt.plot(x2, y, label="Seidel")
+        plt.legend(loc='best')
+        plt.title("alpha = {}".format(alpha))
+        plt.xlabel("iterations")
+        plt.ylabel("n")
+        plt.show()
+        alpha += 0.25
 
 
 main()
