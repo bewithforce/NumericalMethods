@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-import random as random
+import random
 
 EPS = 0.00001
 
